@@ -1,7 +1,7 @@
 import { CirclePlus } from "lucide-react";
 import { Button, Container, Form, InputGroup } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { addTodoActionCreator } from "../reducers/todoReducer";
+import { createTodoItem } from "../reducers/todoReducer.js";
 
 const AddTodo = () => {
   const dispatch = useDispatch();
@@ -10,7 +10,7 @@ const AddTodo = () => {
     e.preventDefault();
     const todo = e.target.todo.value;
     e.target.todo.value = "";
-    dispatch(addTodoActionCreator(todo));
+    dispatch(createTodoItem(todo));
   };
 
   return (

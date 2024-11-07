@@ -1,48 +1,3 @@
-const todoReducer = (state = getTodosFromLocalStorage(), action) => {
-  switch (action.type) {
-    case "ADD_TODO": {
-      const newStateAdded = [...state, action.payload];
-      saveTodosToLocalStorage(newStateAdded);
-      return newStateAdded;
-    }
-    case "DELETE_TODO": {
-      const newStateDelete = state.filter(
-        (todo) => todo.id !== action.payload.id
-      );
-      saveTodosToLocalStorage(newStateDelete);
-      return newStateDelete;
-    }
-    case "COMPLETE_TODO": {
-      const id = action.payload.id;
-      const todoToComplete = state.find((todo) => todo.id === id);
-      const completedTodo = {
-        ...todoToComplete,
-        completed: !todoToComplete.completed ? true : false,
-      };
-      const updatedCompleteStatusTodos = state.map((todo) =>
-        todo.id !== id ? todo : completedTodo
-      );
-      saveTodosToLocalStorage(updatedCompleteStatusTodos);
-      return updatedCompleteStatusTodos;
-    }
-    case "UPDATE_TODO": {
-      const id = action.payload.id;
-      const todoToUpdate = state.find((todo) => todo.id === id);
-      const updateTodo = {
-        ...todoToUpdate,
-        title: action.payload.title,
-      };
-      const updatedStateTodos = state.map((todo) =>
-        todo.id !== id ? todo : updateTodo
-      );
-      saveTodosToLocalStorage(updatedStateTodos);
-      return updatedStateTodos;
-    }
-    default:
-      return state;
-  }
-};
-
 const saveTodosToLocalStorage = (todos) => {
   localStorage.setItem("todos", JSON.stringify(todos));
 };
@@ -52,46 +7,66 @@ const getTodosFromLocalStorage = () => {
   return savedTodos ? JSON.parse(savedTodos) : [];
 };
 
-const completedOrNote = [true, false];
-const generateId = () => Math.floor(Math.random() * 1000000) + 1;
+const initialState = getTodosFromLocalStorage();
 
-export const addTodoActionCreator = (todo) => {
-  return {
-    type: "ADD_TODO",
-    payload: {
-      title: todo,
-      completed: completedOrNote[Math.random() < 0.5 ? 0 : 1],
-      id: generateId(),
+import { createSlice, nanoid } from "@reduxjs/toolkit";
+
+const todoSlice = createSlice({
+  name: "todo",
+  initialState,
+  reducers: {
+    createTodoItem(state, action) {
+      console.log(action.payload);
+      const newTodo = {
+        title: action.payload,
+        completed: false,
+        id: nanoid(),
+      };
+      const newState = [...state, newTodo];
+      saveTodosToLocalStorage(newState);
+      return newState;
     },
-  };
-};
-
-export const updateToDoActionCreator = (id, todo) => {
-  return {
-    type: "UPDATE_TODO",
-    payload: {
-      title: todo,
-      id,
+    deleteTodoItem(state, action) {
+      const stateAfterDeletion = state.filter(
+        (todo) => todo.id !== action.payload
+      );
+      saveTodosToLocalStorage(stateAfterDeletion);
+      return stateAfterDeletion;
     },
-  };
-};
-
-export const deleteToDoActionCreator = (id) => {
-  return {
-    type: "DELETE_TODO",
-    payload: {
-      id,
+    markItemToBeCompleted(state, action) {
+      const id = action.payload;
+      const todoToComplete = state.find((todo) => todo.id === id);
+      const completedTodo = {
+        ...todoToComplete,
+        completed: !todoToComplete.completed,
+      };
+      const newState = state.map((item) =>
+        item.id !== id ? item : completedTodo
+      );
+      saveTodosToLocalStorage(newState);
+      return newState;
     },
-  };
-};
-
-export const completeTodoActionContainer = (id) => {
-  return {
-    type: "COMPLETE_TODO",
-    payload: {
-      id,
+    updateTodoItem(state, action) {
+      const id = action.payload.id;
+      const todoToUpdate = state.find((todo) => todo.id === id);
+      const updatedTodo = {
+        ...todoToUpdate,
+        title: action.payload.title,
+      };
+      const newState = state.map((todo) =>
+        todo.id !== id ? todo : updatedTodo
+      );
+      saveTodosToLocalStorage(newState);
+      return newState;
     },
-  };
-};
+  },
+});
 
-export default todoReducer;
+export const {
+  createTodoItem,
+  deleteTodoItem,
+  markItemToBeCompleted,
+  updateTodoItem,
+} = todoSlice.actions;
+
+export default todoSlice.reducer;

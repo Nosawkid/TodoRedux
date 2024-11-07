@@ -1,23 +1,23 @@
 import { CircleSlash, SquareCheckBig } from "lucide-react";
 import { Button, Card, Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import {
-  deleteToDoActionCreator,
-  completeTodoActionContainer,
-  updateToDoActionCreator,
-} from "../reducers/todoReducer";
 import { useState } from "react";
+import {
+  deleteTodoItem,
+  markItemToBeCompleted,
+  updateTodoItem,
+} from "../reducers/todoReducer.js";
 
 const TodoItem = ({ todo }) => {
   const [updateItem, setUpdateItem] = useState(false);
   const [updatedTodo, setUpdatedTodo] = useState("");
   const dispatch = useDispatch();
-  const deleteTodo = (id) => dispatch(deleteToDoActionCreator(id));
-  const completeTodo = (id) => dispatch(completeTodoActionContainer(id));
+  const deleteTodo = (id) => dispatch(deleteTodoItem(id));
+  const completeTodo = (id) => dispatch(markItemToBeCompleted(id));
 
   const updateTodo = (event, id) => {
     event.preventDefault();
-    dispatch(updateToDoActionCreator(id, updatedTodo));
+    dispatch(updateTodoItem({ id, title: updatedTodo }));
     setUpdatedTodo("");
     setUpdateItem(false);
   };
@@ -41,7 +41,11 @@ const TodoItem = ({ todo }) => {
             <Card.Title>{todo.title}</Card.Title>
             <Card.Subtitle className="text-muted">
               {todo.completed ? (
-                <SquareCheckBig size={32} color="green" />
+                <SquareCheckBig
+                  onClick={() => completeTodo(todo.id)}
+                  size={32}
+                  color="green"
+                />
               ) : (
                 <CircleSlash
                   onClick={() => completeTodo(todo.id)}
